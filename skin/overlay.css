@@ -34,3 +34,12 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
+#paranoiaHdrIcon {
+	margin-left: 2px;
+	margin-right: 5px;
+}
+
+.paranoiaProviderVbox {
+	height: 32px;
+	vertical-align: top;
+}
