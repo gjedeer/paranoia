@@ -66,13 +66,19 @@ window.addEventListener("load", function _overlay_eventListener () {
           var match = rcvdRegexp.exec(header);
           if(match)
           {
+			  var local = paranoiaIsHostLocal(match[1]) || 
+		          match[1].replace(/^\s+|\s+$/g, '') == match[2].replace(/^\s+|\s+$/g, ''); // trim
+
 			  received.push({
 				  from: match[1],
 				  to: match[2],
 				  method: match[3],
+				  local: local,
 				  secure: (secureMethods.indexOf(match[3]) != -1),
 				  toString: function() {
-					  return (this.secure ? '✓' : '✗') + ' ' + this.method + ": " + this.from + " ==> " + this.to;
+					  var secureSign = this.secure ? '✓' : '✗';
+					  if(this.local) secureSign = '⌂';
+					  return secureSign + ' ' + this.method + ": " + this.from + " ==> " + this.to;
 				  }
 			  });
           }
@@ -81,15 +87,92 @@ window.addEventListener("load", function _overlay_eventListener () {
 	  return received;
   }
 
-  /* Return number of insecure hosts in the path */
-  function paranoiaAreReceivedHeadersInsecure(receivedHeaders) {
-	  var rv = 0;
-	  receivedHeaders.forEach(function(header) {
-		  Application.console.log(header.from + " - " + header.secure);
-          if(!header.secure) rv++;
+  /* Changes 'yandex' to 'Яндекс' */
+  function paranoiaGetProviderDisplayName(provider) {
+	  var providerDisplayNames = {
+		  'yandex' : 'Яндекс',
+		  'o2pl' : 'Grupa o2.pl',
+		  'onet' : 'Onet.pl',
+		  'wp': 'Wirtualna Polska',
+		  'gadu': 'Gadu Gadu',
+		  'qq': 'QQ',
+	  }
+
+	  if(providerDisplayNames[provider]) {
+		  return providerDisplayNames[provider];
+	  }
+	  else {
+		  return provider.charAt(0).toUpperCase() + provider.slice(1);
+	  }
+  }
+
+  /* Finds known email provider from an array of 'Received:' headers */
+  function paranoiaGetKnownProviders(receivedHeaders) {
+	  known = {
+		  'yandex.net' : 'yandex',
+		  'yandex.ru' : 'yandex',
+		  'go2.pl' : 'o2pl',
+		  'tlen.pl' : 'o2pl',
+		  'o2.pl' : 'o2pl',
+		  'google.com' : 'google',
+		  'twitter.com' : 'twitter',
+		  'facebook.com' : 'facebook',
+		  'mailgun.us' : 'rackspace',
+		  'mailgun.org' : 'rackspace',
+		  'emailsrvr.com' : 'rackspace',
+		  'rackspace.com' : 'rackspace',
+		  'dreamhost.com' : 'dreamhost',
+		  'linode.com' : 'linode',
+		  'messagingengine.com' : 'opera',
+		  'fastmail.fm' : 'opera',
+		  'fastmail.net' : 'opera',
+		  'onet.pl' : 'onet',
+		  'sendgrid.com' : 'sendgrid',
+		  'sendgrid.net' : 'sendgrid',
+		  'wp.pl' : 'wp',
+		  'hostgator.com' : 'hostgator',
+		  'hostgator.net' : 'hostgator',
+		  'interia.pl' : 'interia',
+		  'yahoo.com' : 'yahoo',
+		  'hotmail.com' : 'hotmail',
+		  'qq.com' : 'qq',
+		  'gadu-gadu.pl' : 'gadu',
+	  };
+
+	  var found = new Array();
+	  var domainRegex = /(?:\.|^)([a-z0-9\-]+\.[a-z0-9\-]+)$/g;
+
+	  receivedHeaders.forEach(function(hdr) {
+		  match = domainRegex.exec(hdr.from.toLowerCase());
+		  if(match)
+	      {
+			  domain = match[1];
+			  if(known[domain] && found.indexOf(known[domain]) == -1) {
+				  found.push(known[domain]);
+			  }
+          }
 	  });
 
-	  return rv;
+	  return found;
+  }
+
+  /* Return number of insecure hosts in the path */
+  function paranoiaAreReceivedHeadersInsecure(receivedHeaders) {
+	  var insecure = 0;
+	  var unencryptedLocal = 0;
+	  var encrypted = 0;
+	  receivedHeaders.forEach(function(header) {
+		  Application.console.log(header.from + " - " + header.secure);
+          if(!header.secure && !header.local) insecure++;
+		  if(!header.secure && header.local) unencryptedLocal++;
+		  if(header.secure) encrypted++;
+	  });
+
+	  return {
+		  'insecure': insecure,
+		  'unencryptedLocal': unencryptedLocal,
+		  'encrypted': encrypted
+	  };
   }
 
   /* Create a popup menu with all 'Received:' headers */
@@ -125,7 +208,6 @@ window.addEventListener("load", function _overlay_eventListener () {
 
 	  var elem = document.createElement('image');
 	  elem.setAttribute('id', id);
-	  elem.setAttribute('style', 'list-style-image: url("chrome://demo/skin/icon.png"); width: 32px; height: 32px;');
       elem.onclick = function() {
           document.getElementById('paranoiaConnectionList').openPopup(this, 'after_start', 0, 0, false, false);
       }                       
@@ -134,15 +216,70 @@ window.addEventListener("load", function _overlay_eventListener () {
   }
 
   function paranoiaSetPerfectIcon() {
-	  return paranoiaGetHdrIconDOM().setAttribute('style', 'list-style-image: url("chrome://demo/skin/perfect.png")');
+	  var icon = paranoiaGetHdrIconDOM();
+	  icon.setAttribute('style', 'list-style-image: url("chrome://demo/skin/perfect.png")');
+      icon.setAttribute('tooltiptext', 'Perfect - no known email providers and encryption between all hops');
+	  return icon;
+  }
+
+  function paranoiaSetGoodIcon() {
+	  var icon = paranoiaGetHdrIconDOM();
+	  icon.setAttribute('style', 'list-style-image: url("chrome://demo/skin/good.png")');
+      icon.setAttribute('tooltiptext', 'Good - Email passed known providers or was unencrypted only on a local connection');
+	  return icon;
   }
 
   function paranoiaSetBadIcon() {
-	  return paranoiaGetHdrIconDOM().setAttribute('style', 'list-style-image: url("chrome://demo/skin/bad.png")');
+	  var icon = paranoiaGetHdrIconDOM();
+	  icon.setAttribute('style', 'list-style-image: url("chrome://demo/skin/bad.png")');
+      icon.setAttribute('tooltiptext', '1 non-local connection on the way was unencrypted');
+	  return icon;
   }
 
   function paranoiaSetTragicIcon() {
-	  return paranoiaGetHdrIconDOM().setAttribute('style', 'list-style-image: url("chrome://demo/skin/tragic.png")');
+	  var icon = paranoiaGetHdrIconDOM();
+	  icon.setAttribute('style', 'list-style-image: url("chrome://demo/skin/tragic.png")');
+      icon.setAttribute('tooltiptext', 'More than 1 connection on the way was unencrypted');
+	  return icon;
+  }
+
+  function paranoiaAddProviderIcon(providerName, parentBox) {
+	  var previousBox = paranoiaGetHdrIconDOM();
+
+	  var elem = document.createElement('image');
+	  elem.setAttribute('class', 'paranoiaProvider');
+	  elem.setAttribute('style', 'list-style-image: url("chrome://demo/skin/providers/' + providerName + '.png")');
+	  elem.setAttribute('tooltiptext', paranoiaGetProviderDisplayName(providerName));
+      parentBox.appendChild(elem);
+  }
+
+  function paranoiaAddProviderIcons(providers)
+  {
+	  var oldIcons = document.getElementsByClassName('paranoiaProviderVbox');
+	  var i, len = oldIcons.length;
+	  var vbox;
+
+	  for(i = 0; i < len; i++) {
+		  var elem = oldIcons[i];
+          elem.parentNode.removeChild(elem); 
+	  }
+	  providers.forEach(function(item, i) {
+		  if(i % 2 == 0) {
+			  if(vbox) document.getElementById('dateValueBox').insertBefore(vbox, paranoiaGetHdrIconDOM());
+              vbox = document.createElement('vbox');
+			  vbox.setAttribute('class', 'paranoiaProviderVbox');
+		  }
+		  paranoiaAddProviderIcon(item, vbox);
+	  });
+      if(vbox) document.getElementById('dateValueBox').insertBefore(vbox, paranoiaGetHdrIconDOM());
+  }
+
+  function paranoiaIsHostLocal(hostname) {
+	  if(hostname == 'localhost') return true;
+	  if(hostname == '[127.0.0.1]') return true;
+	  if(hostname == 'Internal') return true;
+	  if(/(^\[10\.)|(^\[172\.1[6-9]\.)|(^\[172\.2[0-9]\.)|(^\[172\.3[0-1]\.)|(^\[192\.168\.)/g.test(hostname)) return true;
+	  return false;
   }
 
 
@@ -173,24 +310,40 @@ gMessageListeners.push({
 			headers = paranoiaParseHeaderString(headersStr);
 			receivedHeaders = paranoiaGetReceivedHeaders(headers);
 
-			var insecure = paranoiaAreReceivedHeadersInsecure(receivedHeaders);
-			if(!insecure)
-			{
+			var providers = paranoiaGetKnownProviders(receivedHeaders);
+
+			var security = paranoiaAreReceivedHeadersInsecure(receivedHeaders);
+			if(!security.insecure && !security.unencryptedLocal && providers.length == 0) {
 				paranoiaSetPerfectIcon();
 			}
-			else if(insecure == 1 && receivedHeaders.length > 1)
-			{
+			else if(!security.insecure) {
+				var icon = paranoiaSetGoodIcon();
+				if(providers.length > 0 && security.unencryptedLocal > 0) {
+					icon.setAttribute('tooltiptext', 'Good: Passed known email providers and the only unencrypted connections were local');
+				}
+				else {
+					if(providers.length > 0) {
+						icon.setAttribute('tooltiptext', 'Good: Passed known email providers');
+					}
+					if(security.unencryptedLocal > 0) {
+						icon.setAttribute('tooltiptext', 'Good: The only unencrypted connections were local');
+					}
+				}
+			}
+			else if(security.insecure == 1) {
 				paranoiaSetBadIcon();
 			}
-			else
-			{
+			else {
 				paranoiaSetTragicIcon();
 			}
 			
 			paranoiaRemoveReceivedPopup();
             var popup = paranoiaCreateReceivedPopup(receivedHeaders);
 			document.getElementById('dateValueBox').appendChild(popup);
-//			receivedHeaders.forEach(function(hdr) {Application.console.log(hdr);});
+			receivedHeaders.forEach(function(hdr) {Application.console.log(hdr);});
+
+			paranoiaAddProviderIcons(providers);
+//			paranoiaAddProviderIcon('google');
 		}
 		catch(e) {
 			Application.console.log("PROBLEM: " + e.message);
