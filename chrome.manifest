@@ -1,0 +1,5 @@
+content demo content/
+skin demo classic/1.0 skin/
+resource demo modules/
+overlay chrome://messenger/content/messenger.xul chrome://demo/content/overlay.xul
+style chrome://global/content/customizeToolbar.xul chrome://demo/skin/overlay.css

@@ -1,0 +1,1 @@
+//pref("emailchat.path", "emailchat");
