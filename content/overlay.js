@@ -67,6 +67,7 @@ window.addEventListener("load", function _overlay_eventListener () {
           if(match)
           {
 			  var local = paranoiaIsHostLocal(match[1]) || 
+				  paranoiaIsHostLocal(match[2]) ||
 		          match[1].replace(/^\s+|\s+$/g, '') == match[2].replace(/^\s+|\s+$/g, ''); // trim
 
 			  received.push({
@@ -108,7 +109,7 @@ window.addEventListener("load", function _overlay_eventListener () {
 
   /* Finds known email provider from an array of 'Received:' headers */
   function paranoiaGetKnownProviders(receivedHeaders) {
-	  known = {
+	  var known = {
 		  'yandex.net' : 'yandex',
 		  'yandex.ru' : 'yandex',
 		  'go2.pl' : 'o2pl',
