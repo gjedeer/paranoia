@@ -51,10 +51,10 @@ if (typeof(tbParanoia) === "undefined") {
 					currentHeader += " " + line.replace(/^\s+|\s+$/g, '');
 				}
 				else
-			{
-				if(currentHeader.length > 0) headers.push(currentHeader);
-				currentHeader = line;
-			}
+				{
+					if(currentHeader.length > 0) headers.push(currentHeader);
+					currentHeader = line;
+				}
 			});
 
 			return headers;
@@ -70,8 +70,8 @@ if (typeof(tbParanoia) === "undefined") {
 				var match = rcvdRegexp.exec(header);
 				if(match)
 			{
-				var local = this.paranoiaIsHostLocal(match[1]) || 
-				this.paranoiaIsHostLocal(match[2]) ||
+				var local = tbParanoia.paranoiaIsHostLocal(match[1]) || 
+				tbParanoia.paranoiaIsHostLocal(match[2]) ||
 				match[1].replace(/^\s+|\s+$/g, '') == match[2].replace(/^\s+|\s+$/g, ''); // trim
 
 			received.push({
@@ -221,40 +221,40 @@ if (typeof(tbParanoia) === "undefined") {
 		},
 
 		paranoiaSetPerfectIcon: function() {
-			var icon = this.paranoiaGetHdrIconDOM();
+			var icon = tbParanoia.paranoiaGetHdrIconDOM();
 			icon.setAttribute('style', 'list-style-image: url("chrome://demo/skin/perfect.png")');
 			icon.setAttribute('tooltiptext', 'Perfect - no known email providers and encryption between all hops');
 			return icon;
 		},
 
 		paranoiaSetGoodIcon: function() {
-			var icon = this.paranoiaGetHdrIconDOM();
+			var icon = tbParanoia.paranoiaGetHdrIconDOM();
 			icon.setAttribute('style', 'list-style-image: url("chrome://demo/skin/good.png")');
 			icon.setAttribute('tooltiptext', 'Good - Email passed known providers or was unencrypted only on a local connection');
 			return icon;
 		},
 
 		paranoiaSetBadIcon: function() {
-			var icon = this.paranoiaGetHdrIconDOM();
+			var icon = tbParanoia.paranoiaGetHdrIconDOM();
 			icon.setAttribute('style', 'list-style-image: url("chrome://demo/skin/bad.png")');
 			icon.setAttribute('tooltiptext', '1 non-local connection on the way was unencrypted');
 			return icon;
 		},
 
 		paranoiaSetTragicIcon: function() {
-			var icon = this.paranoiaGetHdrIconDOM();
+			var icon = tbParanoia.paranoiaGetHdrIconDOM();
 			icon.setAttribute('style', 'list-style-image: url("chrome://demo/skin/tragic.png")');
 			icon.setAttribute('tooltiptext', 'More than 1 connection on the way was unencrypted');
 			return icon;
 		},
 
 		paranoiaAddProviderIcon: function(providerName, parentBox) {
-			var previousBox = this.paranoiaGetHdrIconDOM();
+			var previousBox = tbParanoia.paranoiaGetHdrIconDOM();
 
 			var elem = document.createElement('image');
 			elem.setAttribute('class', 'paranoiaProvider');
 			elem.setAttribute('style', 'list-style-image: url("chrome://demo/skin/providers/' + providerName + '.png")');
-			elem.setAttribute('tooltiptext', this.paranoiaGetProviderDisplayName(providerName));
+			elem.setAttribute('tooltiptext', tbParanoia.paranoiaGetProviderDisplayName(providerName));
 			parentBox.appendChild(elem);
 		},
 
@@ -270,13 +270,13 @@ if (typeof(tbParanoia) === "undefined") {
 			}
 			providers.forEach(function(item, i) {
 				if(i % 2 == 0) {
-					if(vbox) document.getElementById('dateValueBox').insertBefore(vbox, this.paranoiaGetHdrIconDOM());
+					if(vbox) document.getElementById('dateValueBox').insertBefore(vbox, tbParanoia.paranoiaGetHdrIconDOM());
 					vbox = document.createElement('vbox');
 					vbox.setAttribute('class', 'paranoiaProviderVbox');
 				}
-				this.paranoiaAddProviderIcon(item, vbox);
+				tbParanoia.paranoiaAddProviderIcon(item, vbox);
 			});
-			if(vbox) document.getElementById('dateValueBox').insertBefore(vbox, this.paranoiaGetHdrIconDOM());
+			if(vbox) document.getElementById('dateValueBox').insertBefore(vbox, tbParanoia.paranoiaGetHdrIconDOM());
 		},
 
 		/* Return true if host is on a local network */
@@ -303,7 +303,7 @@ if (typeof(tbParanoia) === "undefined") {
 
 					// https://github.com/clear-code/changequote/blob/0f5a09d3887d97446553d6225cc9f71dc2a75039/content/changequote/changequote.jsh
 					// http://thunderbirddocs.blogspot.com/2005/02/thunderbird-extensions-how-to-get-body.html
-					try {
+//					try {
 						stream = folder.getOfflineFileStream(msg.messageKey, offset, messageSize);
 						var scriptableStream=Components.classes["@mozilla.org/scriptableinputstream;1"].getService(Components.interfaces.nsIScriptableInputStream);
 
@@ -314,17 +314,17 @@ if (typeof(tbParanoia) === "undefined") {
 						stream.close();
 
 						/* We've got the headers string, let's parse it */
-						headers = this.paranoiaParseHeaderString(headersStr);
-						receivedHeaders = this.paranoiaGetReceivedHeaders(headers);
+						headers = tbParanoia.paranoiaParseHeaderString(headersStr);
+						receivedHeaders = tbParanoia.paranoiaGetReceivedHeaders(headers);
 
-						var providers = this.paranoiaGetKnownProviders(receivedHeaders);
+						var providers = tbParanoia.paranoiaGetKnownProviders(receivedHeaders);
 
-						var security = this.paranoiaAreReceivedHeadersInsecure(receivedHeaders);
+						var security = tbParanoia.paranoiaAreReceivedHeadersInsecure(receivedHeaders);
 						if(!security.insecure && !security.unencryptedLocal && providers.length == 0) {
-							this.paranoiaSetPerfectIcon();
+							tbParanoia.paranoiaSetPerfectIcon();
 						}
 						else if(!security.insecure) {
-							var icon = this.paranoiaSetGoodIcon();
+							var icon = tbParanoia.paranoiaSetGoodIcon();
 							if(providers.length > 0 && security.unencryptedLocal > 0) {
 								icon.setAttribute('tooltiptext', 'Good: Passed known email providers and the only unencrypted connections were local');
 							}
@@ -338,23 +338,23 @@ if (typeof(tbParanoia) === "undefined") {
 							}
 						}
 						else if(security.insecure == 1) {
-							this.paranoiaSetBadIcon();
+							tbParanoia.paranoiaSetBadIcon();
 						}
 						else {
-							this.paranoiaSetTragicIcon();
+							tbParanoia.paranoiaSetTragicIcon();
 						}
 
-						this.paranoiaRemoveReceivedPopup();
-						var popup = this.paranoiaCreateReceivedPopup(receivedHeaders);
+						tbParanoia.paranoiaRemoveReceivedPopup();
+						var popup = tbParanoia.paranoiaCreateReceivedPopup(receivedHeaders);
 						document.getElementById('dateValueBox').appendChild(popup);
 						receivedHeaders.forEach(function(hdr) {Application.console.log(hdr);});
 
-						this.paranoiaAddProviderIcons(providers);
+						tbParanoia.paranoiaAddProviderIcons(providers);
 						//			paranoiaAddProviderIcon('google');
-					}
-					catch(e) {
-						Application.console.log("PROBLEM: " + e.message);
-					}
+//					}
+//					catch(e) {
+//						Application.console.log("PROBLEM: " + e.message);
+//					}
 				},
 				onEndHeaders: function() {
 				},  
