@@ -64,7 +64,7 @@ if (typeof(tbParanoia) === "undefined") {
 		paranoiaGetReceivedHeaders: function(parsedHeaders) {
 			var received = Array();
 			var rcvdRegexp = /^Received:.*from\s+([^ ]+)\s+.*by ([^ ]+)\s+.*with\s+([A-Z0-9]+).*;.*$/g;
-			var secureMethods = ['SMTPS', 'ESMTPS', 'SMTPSA', 'ESMTPSA'];
+			var secureMethods = ['SMTPS', 'ESMTPS', 'SMTPSA', 'ESMTPSA', 'AES256'];
 
 			parsedHeaders.forEach(function(header) {
 				var match = rcvdRegexp.exec(header);
