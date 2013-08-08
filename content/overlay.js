@@ -72,6 +72,7 @@ if (typeof(tbParanoia) === "undefined") {
 			{
 				var local = tbParanoia.paranoiaIsHostLocal(match[1]) || 
 				tbParanoia.paranoiaIsHostLocal(match[2]) ||
+				tbParanoia.paranoiaGetDomainName(match[1]) == tbParanoia.paranoiaGetDomainName(match[2]) ||
 				match[1].replace(/^\s+|\s+$/g, '') == match[2].replace(/^\s+|\s+$/g, ''); // trim
 
 			received.push({
@@ -286,6 +287,15 @@ if (typeof(tbParanoia) === "undefined") {
 			if(hostname == 'Internal') return true;
 			if(/(^\[10\.)|(^\[172\.1[6-9]\.)|(^\[172\.2[0-9]\.)|(^\[172\.3[0-1]\.)|(^\[192\.168\.)/g.test(hostname)) return true;
 			return false;
+		},
+
+		/* mx123.mail.corpo.com -> corpo.com */
+		paranoiaGetDomainName: function(hostname) {
+			if(hostname.indexOf('.') < 0) {
+				return hostname;
+			}
+
+			return hostname.match(/[a-z0-9][a-z0-9\-]+\.[a-z]+$/)[0];
 		},
 
 		init: function() {
