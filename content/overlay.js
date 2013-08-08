@@ -53,7 +53,7 @@ if (typeof(tbParanoia) === "undefined") {
 				else
 				{
 					if(currentHeader.length > 0) headers.push(currentHeader);
-					currentHeader = line;
+					var currentHeader = line;
 				}
 			});
 
@@ -156,10 +156,10 @@ if (typeof(tbParanoia) === "undefined") {
 			var thirdLevelDomainRegex = /(?:\.|^)([a-z0-9\-]+\.[a-z0-9\-]+\.[a-z0-9\-]+)$/g;
 
 			receivedHeaders.forEach(function(hdr) {
-				match = domainRegex.exec(hdr.from.toLowerCase());
+				var match = domainRegex.exec(hdr.from.toLowerCase());
 				if(match)
 				{
-					domain = match[1];
+					var domain = match[1];
 					
 					// special case - .net.pl etc
 					if(thirdLevelDomain.test(domain)) {
@@ -287,7 +287,7 @@ if (typeof(tbParanoia) === "undefined") {
 			providers.forEach(function(item, i) {
 				if(i % 2 == 0) {
 					if(vbox) document.getElementById('dateValueBox').insertBefore(vbox, tbParanoia.paranoiaGetHdrIconDOM());
-					vbox = document.createElement('vbox');
+					var vbox = document.createElement('vbox');
 					vbox.setAttribute('class', 'paranoiaProviderVbox');
 				}
 				tbParanoia.paranoiaAddProviderIcon(item, vbox);
@@ -333,7 +333,7 @@ if (typeof(tbParanoia) === "undefined") {
 					// https://github.com/clear-code/changequote/blob/0f5a09d3887d97446553d6225cc9f71dc2a75039/content/changequote/changequote.jsh
 					// http://thunderbirddocs.blogspot.com/2005/02/thunderbird-extensions-how-to-get-body.html
 //					try {
-						stream = folder.getOfflineFileStream(msg.messageKey, offset, messageSize);
+						var stream = folder.getOfflineFileStream(msg.messageKey, offset, messageSize);
 						var scriptableStream=Components.classes["@mozilla.org/scriptableinputstream;1"].getService(Components.interfaces.nsIScriptableInputStream);
 
 						scriptableStream.init(stream);
@@ -343,8 +343,8 @@ if (typeof(tbParanoia) === "undefined") {
 						stream.close();
 
 						/* We've got the headers string, let's parse it */
-						headers = tbParanoia.paranoiaParseHeaderString(headersStr);
-						receivedHeaders = tbParanoia.paranoiaGetReceivedHeaders(headers);
+						var headers = tbParanoia.paranoiaParseHeaderString(headersStr);
+						var receivedHeaders = tbParanoia.paranoiaGetReceivedHeaders(headers);
 
 						var providers = tbParanoia.paranoiaGetKnownProviders(receivedHeaders);
 

@@ -6,7 +6,7 @@
 
   <Description about="urn:mozilla:install-manifest">
     <em:id>tls-paranoia@gdr.name</em:id>
-    <em:version>0.1</em:version>
+    <em:version>0.2</em:version>
 	<em:type>2</em:type>
     
     <!-- Target Application this theme can install into, 
@@ -21,11 +21,9 @@
     
     <!-- Front End MetaData -->
     <em:name>Paranoia</em:name>
-	<em:description>Check if your emails arrived securely</em:description>
+	<em:description>Check if your emails arrived encrypted (and which corporations were able to read them nevertheless)</em:description>
 	<em:creator>GDR!</em:creator>
     <em:contributor>Małgorzata Godziuk</em:contributor>
     <em:contributor>Jonathan Protzenko</em:contributor>
-
   </Description>      
-
 </RDF>
