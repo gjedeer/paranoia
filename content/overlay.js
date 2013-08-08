@@ -102,6 +102,7 @@ if (typeof(tbParanoia) === "undefined") {
 				'wp': 'Wirtualna Polska',
 				'gadu': 'Gadu Gadu',
 				'qq': 'QQ',
+				'home': 'Home.pl',
 			}
 
 			if(providerDisplayNames[provider]) {
@@ -143,20 +144,34 @@ if (typeof(tbParanoia) === "undefined") {
 				'hotmail.com' : 'hotmail',
 				'qq.com' : 'qq',
 				'gadu-gadu.pl' : 'gadu',
+				'amazonses.com' : 'amazon',
+				'amazon.com' : 'amazon',
+				'home.pl' : 'home',
+				'home.net.pl' : 'home',
 			};
 
 			var found = new Array();
 			var domainRegex = /(?:\.|^)([a-z0-9\-]+\.[a-z0-9\-]+)$/g;
+			var thirdLevelDomain = /^(net|com|org|biz)\.[a-z0-9]+$/g;
+			var thirdLevelDomainRegex = /(?:\.|^)([a-z0-9\-]+\.[a-z0-9\-]+\.[a-z0-9\-]+)$/g;
 
 			receivedHeaders.forEach(function(hdr) {
 				match = domainRegex.exec(hdr.from.toLowerCase());
 				if(match)
-			{
-				domain = match[1];
-				if(known[domain] && found.indexOf(known[domain]) == -1) {
-					found.push(known[domain]);
+				{
+					domain = match[1];
+					
+					// special case - .net.pl etc
+					if(thirdLevelDomain.test(domain)) {
+						match = thirdLevelDomainRegex.exec(hdr.from.toLowerCase());
+						if(match) {
+							domain = match[1];
+						}
+					}
+					if(known[domain] && found.indexOf(known[domain]) == -1) {
+						found.push(known[domain]);
+					}
 				}
-			}
 			});
 
 			return found;
@@ -294,8 +309,12 @@ if (typeof(tbParanoia) === "undefined") {
 			if(hostname.indexOf('.') < 0) {
 				return hostname;
 			}
-
-			return hostname.match(/[a-z0-9][a-z0-9\-]+\.[a-z]+$/)[0];
+            
+			try {
+				return hostname.match(/[a-z0-9][a-z0-9\-]+\.[a-z]+$/)[0];
+			} catch(e) {
+				return hostname;
+			}
 		},
 
 		init: function() {
