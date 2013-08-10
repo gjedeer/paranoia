@@ -46,7 +46,8 @@ if (typeof(tbParanoia) === "undefined") {
 			var headers = Array();
 			var currentHeader = "";
 
-			hdrLines.forEach(function(line, number, all) {
+			for(var i = 0; i < hdrLines.length; i++) {
+				line = hdrLines[i];
 				if(line[0] == " " || line[0] == "\t") {
 					currentHeader += " " + line.replace(/^\s+|\s+$/g, '');
 				}
@@ -55,7 +56,7 @@ if (typeof(tbParanoia) === "undefined") {
 					if(currentHeader.length > 0) headers.push(currentHeader);
 					var currentHeader = line;
 				}
-			});
+			};
 
 			return headers;
 		},
@@ -284,14 +285,16 @@ if (typeof(tbParanoia) === "undefined") {
 				var elem = oldIcons[i];
 				elem.parentNode.removeChild(elem); 
 			}
-			providers.forEach(function(item, i) {
+			
+			for(var i = 0; i < providers.length; i++) {
+				var item = providers[i];
 				if(i % 2 == 0) {
 					if(vbox) document.getElementById('dateValueBox').insertBefore(vbox, tbParanoia.paranoiaGetHdrIconDOM());
 					var vbox = document.createElement('vbox');
 					vbox.setAttribute('class', 'paranoiaProviderVbox');
 				}
 				tbParanoia.paranoiaAddProviderIcon(item, vbox);
-			});
+			};
 			if(vbox) document.getElementById('dateValueBox').insertBefore(vbox, tbParanoia.paranoiaGetHdrIconDOM());
 		},
 
