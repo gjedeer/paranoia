@@ -70,25 +70,25 @@ if (typeof(tbParanoia) === "undefined") {
 			parsedHeaders.forEach(function(header) {
 				var match = rcvdRegexp.exec(header);
 				if(match)
-			{
-				var local = tbParanoia.paranoiaIsHostLocal(match[1]) || 
-				tbParanoia.paranoiaIsHostLocal(match[2]) ||
-				tbParanoia.paranoiaGetDomainName(match[1]) == tbParanoia.paranoiaGetDomainName(match[2]) ||
-				match[1].replace(/^\s+|\s+$/g, '') == match[2].replace(/^\s+|\s+$/g, ''); // trim
+				{
+					var local = tbParanoia.paranoiaIsHostLocal(match[1]) || 
+					tbParanoia.paranoiaIsHostLocal(match[2]) ||
+					tbParanoia.paranoiaGetDomainName(match[1]) == tbParanoia.paranoiaGetDomainName(match[2]) ||
+					match[1].replace(/^\s+|\s+$/g, '') == match[2].replace(/^\s+|\s+$/g, ''); // trim
 
-			received.push({
-				from: match[1],
-				to: match[2],
-				method: match[3],
-				local: local,
-				secure: (secureMethods.indexOf(match[3]) != -1),
-				toString: function() {
-					var secureSign = this.secure ? '✓' : '✗';
-					if(this.local) secureSign = '⌂';
-					return secureSign + ' ' + this.method + ": " + this.from + " ==> " + this.to;
+					received.push({
+						from: match[1],
+						to: match[2],
+						method: match[3],
+						local: local,
+						secure: (secureMethods.indexOf(match[3]) != -1),
+						toString: function() {
+							var secureSign = this.secure ? '✓' : '✗';
+							if(this.local) secureSign = '⌂';
+							return secureSign + ' ' + this.method + ": " + this.from + " ==> " + this.to;
+						}
+					});
 				}
-			});
-			}
 			});
 
 			return received;
@@ -184,7 +184,7 @@ if (typeof(tbParanoia) === "undefined") {
 			var unencryptedLocal = 0;
 			var encrypted = 0;
 			receivedHeaders.forEach(function(header) {
-				Application.console.log(header.from + " - " + header.secure);
+//				Application.console.log(header.from + " - " + header.secure);
 				if(!header.secure && !header.local) insecure++;
 				if(!header.secure && header.local) unencryptedLocal++;
 				if(header.secure) encrypted++;
@@ -227,6 +227,10 @@ if (typeof(tbParanoia) === "undefined") {
 
 			var parentBox = document.getElementById('dateValueBox'); ///////
 			var previousBox = document.getElementById('smimeBox');
+
+			if(!parentBox || !previousBox) {
+				Application.console.log('Chrome element not found');
+			}
 
 			var elem = document.createElement('image');
 			elem.setAttribute('id', id);
@@ -351,37 +355,47 @@ if (typeof(tbParanoia) === "undefined") {
 
 						var providers = tbParanoia.paranoiaGetKnownProviders(receivedHeaders);
 
-						var security = tbParanoia.paranoiaAreReceivedHeadersInsecure(receivedHeaders);
-						if(!security.insecure && !security.unencryptedLocal && providers.length == 0) {
-							tbParanoia.paranoiaSetPerfectIcon();
-						}
-						else if(!security.insecure) {
-							var icon = tbParanoia.paranoiaSetGoodIcon();
-							if(providers.length > 0 && security.unencryptedLocal > 0) {
-								icon.setAttribute('tooltiptext', 'Good: Passed known email providers and the only unencrypted connections were local');
+						try {
+							var security = tbParanoia.paranoiaAreReceivedHeadersInsecure(receivedHeaders);
+							if(!security.insecure && !security.unencryptedLocal && providers.length == 0) {
+								tbParanoia.paranoiaSetPerfectIcon();
+							}
+							else if(!security.insecure) {
+								var icon = tbParanoia.paranoiaSetGoodIcon();
+								if(providers.length > 0 && security.unencryptedLocal > 0) {
+									icon.setAttribute('tooltiptext', 'Good: Passed known email providers and the only unencrypted connections were local');
+								}
+								else {
+									if(providers.length > 0) {
+										icon.setAttribute('tooltiptext', 'Good: Passed known email providers');
+									}
+									if(security.unencryptedLocal > 0) {
+										icon.setAttribute('tooltiptext', 'Good: The only unencrypted connections were local');
+									}
+								}
+							}
+							else if(security.insecure == 1) {
+								tbParanoia.paranoiaSetBadIcon();
 							}
 							else {
-								if(providers.length > 0) {
-									icon.setAttribute('tooltiptext', 'Good: Passed known email providers');
-								}
-								if(security.unencryptedLocal > 0) {
-									icon.setAttribute('tooltiptext', 'Good: The only unencrypted connections were local');
-								}
+								tbParanoia.paranoiaSetTragicIcon();
+							}
+
+							tbParanoia.paranoiaRemoveReceivedPopup();
+							var popup = tbParanoia.paranoiaCreateReceivedPopup(receivedHeaders);
+							document.getElementById('dateValueBox').appendChild(popup);
+//							receivedHeaders.forEach(function(hdr) {Application.console.log(hdr);});
+
+							tbParanoia.paranoiaAddProviderIcons(providers);
+						}
+						catch(e) {
+							/* Message title bar modified - Compact Headers or other extension */
+							if(e.name.toString() == "NotFoundError") {
+								Application.console.log('XUL element not found: ' + e.message);
+							} else {
+								throw e;
 							}
 						}
-						else if(security.insecure == 1) {
-							tbParanoia.paranoiaSetBadIcon();
-						}
-						else {
-							tbParanoia.paranoiaSetTragicIcon();
-						}
-
-						tbParanoia.paranoiaRemoveReceivedPopup();
-						var popup = tbParanoia.paranoiaCreateReceivedPopup(receivedHeaders);
-						document.getElementById('dateValueBox').appendChild(popup);
-						receivedHeaders.forEach(function(hdr) {Application.console.log(hdr);});
-
-						tbParanoia.paranoiaAddProviderIcons(providers);
 						//			paranoiaAddProviderIcon('google');
 //					}
 //					catch(e) {
