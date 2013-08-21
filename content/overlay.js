@@ -48,11 +48,13 @@ if (typeof(tbParanoia) === "undefined") {
 
 			for(var i = 0; i < hdrLines.length; i++) {
 				line = hdrLines[i];
+				/* Strip spaces from start and end of line */
 				if(line[0] == " " || line[0] == "\t") {
 					currentHeader += " " + line.replace(/^\s+|\s+$/g, '');
 				}
 				else
 				{
+					/* No spaces - this is start of a new header */
 					if(currentHeader.length > 0) headers.push(currentHeader);
 					var currentHeader = line;
 				}
@@ -64,12 +66,14 @@ if (typeof(tbParanoia) === "undefined") {
 		/* Return only 'Received:' headers, parsed to objects */
 		paranoiaGetReceivedHeaders: function(parsedHeaders) {
 			var received = Array();
-			var rcvdRegexp = /^Received:.*from\s+([^ ]+)\s+.*by ([^ ]+)\s+.*with\s+([A-Z0-9]+).*;.*$/g;
 			var secureMethods = ['SMTPS', 'ESMTPS', 'SMTPSA', 'ESMTPSA', 'AES256'];
 
-			parsedHeaders.forEach(function(header) {
+			for(var i = 0; i < parsedHeaders.length; i++) {
+				/* Must stay in the loop - stupid JS won't match the same regexp twice */
+				var rcvdRegexp = /^Received:.*from\s+([^ ]+)\s+.*by ([^ ]+)\s+.*with\s+([A-Za-z0-9]+).*;.*$/g;
+				var header = parsedHeaders[i];
 				var match = rcvdRegexp.exec(header);
-				if(match)
+				if(match !== null)
 				{
 					var local = tbParanoia.paranoiaIsHostLocal(match[1]) || 
 					tbParanoia.paranoiaIsHostLocal(match[2]) ||
@@ -89,7 +93,7 @@ if (typeof(tbParanoia) === "undefined") {
 						}
 					});
 				}
-			});
+			}
 
 			return received;
 		},
@@ -339,7 +343,7 @@ if (typeof(tbParanoia) === "undefined") {
 
 					// https://github.com/clear-code/changequote/blob/0f5a09d3887d97446553d6225cc9f71dc2a75039/content/changequote/changequote.jsh
 					// http://thunderbirddocs.blogspot.com/2005/02/thunderbird-extensions-how-to-get-body.html
-//					try {
+					try {
 						var stream = folder.getOfflineFileStream(msg.messageKey, offset, messageSize);
 						var scriptableStream=Components.classes["@mozilla.org/scriptableinputstream;1"].getService(Components.interfaces.nsIScriptableInputStream);
 
@@ -396,11 +400,10 @@ if (typeof(tbParanoia) === "undefined") {
 								throw e;
 							}
 						}
-						//			paranoiaAddProviderIcon('google');
-//					}
-//					catch(e) {
-//						Application.console.log("PROBLEM: " + e.message);
-//					}
+					}
+					catch(e) {
+						Application.console.log("PROBLEM with Paranoia: " + e.message);
+					}
 				},
 				onEndHeaders: function() {
 				},  
