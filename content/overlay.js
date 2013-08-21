@@ -328,6 +328,11 @@ if (typeof(tbParanoia) === "undefined") {
 			}
 		},
 
+		/* Checks if given nsMsgFolder is a RSS/Atom feed folder */
+		paranoiaIsFeedFolder: function(folder) {
+			return /^mailbox:\/\/[^@\/]+@Feeds/.exec(folder.URI);
+		},
+
 		init: function() {
 			// http://stackoverflow.com/questions/5089405/thunderbird-extension-add-field-to-messagepane-how-to-deal-with-windows-instan
 			/* Add a listener for changed message */
@@ -337,6 +342,7 @@ if (typeof(tbParanoia) === "undefined") {
 					if(!msg) return;
 
 					var folder = msg.folder;
+					if(tbParanoia.paranoiaIsFeedFolder(folder)) return;
 
 					var offset = new Object();
 					var messageSize = new Object();
