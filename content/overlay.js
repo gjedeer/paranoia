@@ -85,7 +85,7 @@ if (typeof(tbParanoia) === "undefined") {
 						to: match[2],
 						method: match[3],
 						local: local,
-						secure: (secureMethods.indexOf(match[3]) != -1),
+						secure: (secureMethods.indexOf(match[3].toUpperCase()) != -1),
 						toString: function() {
 							var secureSign = this.secure ? '✓' : '✗';
 							if(this.local) secureSign = '⌂';
