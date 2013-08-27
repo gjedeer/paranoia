@@ -156,11 +156,12 @@ if (typeof(tbParanoia) === "undefined") {
 			};
 
 			var found = new Array();
-			var domainRegex = /(?:\.|^)([a-z0-9\-]+\.[a-z0-9\-]+)$/g;
-			var thirdLevelDomain = /^(net|com|org|biz)\.[a-z0-9]+$/g;
-			var thirdLevelDomainRegex = /(?:\.|^)([a-z0-9\-]+\.[a-z0-9\-]+\.[a-z0-9\-]+)$/g;
 
 			receivedHeaders.forEach(function(hdr) {
+				var domainRegex = /(?:\.|^)([a-z0-9\-]+\.[a-z0-9\-]+)$/g;
+				var thirdLevelDomain = /^(net|com|org|biz)\.[a-z0-9]+$/g;
+				var thirdLevelDomainRegex = /(?:\.|^)([a-z0-9\-]+\.[a-z0-9\-]+\.[a-z0-9\-]+)$/g;
+
 				var match = domainRegex.exec(hdr.from.toLowerCase());
 				if(match)
 				{
