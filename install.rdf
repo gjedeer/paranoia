@@ -6,7 +6,7 @@
 
   <Description about="urn:mozilla:install-manifest">
     <em:id>tls-paranoia@gdr.name</em:id>
-    <em:version>0.2.1</em:version>
+    <em:version>0.2.2</em:version>
 	<em:type>2</em:type>
     
     <!-- Target Application this theme can install into, 
