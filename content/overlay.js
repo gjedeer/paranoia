@@ -42,7 +42,14 @@ if (typeof(tbParanoia) === "undefined") {
 	var tbParanoia = {
 		/* Parse RFC-2822 header */
 		paranoiaParseHeaderString: function(headersStr) {
-			var hdrLines = headersStr.split("\r\n");
+			var headers = tbParanoia.paranoiaParseHeaderStringWithSplitter("\r\n",headersStr);
+			if (headers.length == 0) {
+				headers = tbParanoia.paranoiaParseHeaderStringWithSplitter("\n",headersStr);
+			}
+			return headers;
+		},
+		paranoiaParseHeaderStringWithSplitter: function(splitStr, headersStr) {
+			var hdrLines = headersStr.split(splitStr);
 			var headers = Array();
 			var currentHeader = "";
 
@@ -359,6 +366,9 @@ if (typeof(tbParanoia) === "undefined") {
 						scriptableStream.init(stream);
 						var fullBody = scriptableStream.read(msg.messageSize);
 						var headersStr = fullBody.substring(0, fullBody.indexOf("\r\n\r\n"));
+						if (headersStr.length == 0) { 
+						  headersStr = fullBody.substring(0, fullBody.indexOf("\n\n"));
+						}
 						scriptableStream.close();
 						stream.close();
 

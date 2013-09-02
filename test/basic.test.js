@@ -102,3 +102,18 @@ function testLocalhost() {
 
 	assertTrue(tbParanoia.paranoiaIsHostLocal('www-data'));
 }
+
+function testNonRFCNewline() {
+	var headersStr = "X-Account-Key: account3\nX-UIDL: 51e3-0214-45454545-917a-ffaaffaaffaaffaa\nX-Mozilla-Status: 0001\nX-Mozilla-Status2: 00000000\nX-Mozilla-Keys:                                                                                 \nStatus:  U\nReturn-Path: <mxsfghesdedfvs@comcast.net>\nReceived: from mx-collie.atl.sa.earthlink.net ([207.69.195.165])\n\tby mdl-compact.atl.sa.earthlink.net (EarthLink SMTP Server) with SMTP id 1ht56yhg5ggr5ygt; Tue, 27 Aug 2013 08:29:15 -0400 (EDT)\nReceived: from qmta12.emeryville.ca.mail.comcast.net ([76.96.27.227])\n\tby mx-collie.atl.sa.earthlink.net (EarthLink SMTP Server) with ESMTP id 1veioz4FB3Nl36t0\n\tfor <mxsfghesdedfvs@earthlink.net>; Tue, 27 Aug 2013 08:29:15 -0400 (EDT)\nReceived: from omta01.emeryville.ca.mail.comcast.net ([76.96.30.11])\n\tby qmta12.emeryville.ca.mail.comcast.net with comcast\n\tid HoSe1m0050EPcho01oVEGn; Tue, 27 Aug 2013 12:29:14 +0000\nReceived: from sz0029.ev.mail.comcast.net ([76.96.40.138])\n\tby omta01.emeryville.ca.mail.comcast.net with comcast\n\tid HoVE1m00V2yr1eL8MoVEni; Tue, 27 Aug 2013 12:29:14 +0000\nDate: Tue, 27 Aug 2013 12:29:14 +0000 (UTC)\nFrom: mxsfghesdedfvs@comcast.net\nTo: mxsfghesdedfvs@earthlink.net\nMessage-ID: <806816440.741868.1377606554583.JavaMail.root@sz0029a.emeryville.ca.mail.comcast.net>\nSubject: tesing\nMIME-Version: 1.0\nContent-Type: multipart\/alternative; \n\tboundary=\"----=_Part_741867_312285907.1377606554582\"\nX-Originating-IP: [::ffff:67.212.111.222]\nX-Mailer: Zimbra 6.0.13_GA_2944 (ZimbraWebClient - FF3.0 (Mac)\/6.0.13_GA_2944)\nDKIM-Signature: v=1; a=rsa-sha256; c=relaxed\/relaxed; d=comcast.net;\n\ts=q20121106; t=1377606554;\n\tbh=1nYxj8PqaeAZ\/N5211SnuV7WFobEezVqC0WDJ\/ndEDU=;\n\th=Received:Received:Date:From:To:Message-ID:Subject:MIME-Version:\n\t Content-Type;\n\tb=T4cgFre10+yvP0rlbvcrPEelN+b46AMjY2c8Izg3TW0wALzanRWYeEn9YtsZcG63V\n\t umLVLEdiPpIf+NHzfe6jZ\/pCoimUyi0+hqWe5lCAzPoI0oPyRA29oy8vEDL9I00Lhq\n\t LK9R6hUYbSBap\/ApkZQafsAwI5mYr3W639L+wa8J8asQsZqY\/Ih11DxIVzvUVkuhD2\n\t 0nP32IdujpuWWnhMzRAutIgOdHx1EIL8jDEnUsYOw79UXEjTUZBo7NGOZeUBL8Quqr\n\t J3kMcxYR0cQHMXcVwgqGKTDiQVHPShjgBmRGCRjkxNHV587ADu7lEE7vwzs3RViD0\/\n\t m+Zvk+yyYq+Dg==\nX-ELNK-Received-Info: spv=0;\nX-ELNK-AV: 0\nX-ELNK-Info: sbv=0; sbrc=.0; sbf=00; sbw=000;\n";
+
+	var tbParanoia = utils.getTestWindow().tbParanoia;
+	
+	var headers = tbParanoia.paranoiaParseHeaderString(headersStr);
+	assert.equals(24, headers.length);
+	var receivedHeaders = tbParanoia.paranoiaGetReceivedHeaders(headers);
+	assert.equals(4, receivedHeaders.length);
+	var security = tbParanoia.paranoiaAreReceivedHeadersInsecure(receivedHeaders);
+	assert.equals(3, security.unencryptedLocal);
+	assert.equals(1, security.insecure);
+	assert.equals(0, security.encrypted);
+}
