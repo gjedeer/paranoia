@@ -117,3 +117,20 @@ function testNonRFCNewline() {
 	assert.equals(1, security.insecure);
 	assert.equals(0, security.encrypted);
 }
+
+function testIPExtraction() {
+	var headersStr = "Return-Path: <theuser@theserver.net>\r\nReceived: from compute4.internal (compute4.nyi.mail.srv.osa [10.202.2.44])\r\n     by sloti15t15 (Cyrus git2.5+0-git-fastmail-9401) with LMTPA;\r\n     Sat, 07 Sep 2013 12:07:15 -0400\r\nX-Sieve: CMU Sieve 2.4\r\nX-Spam-score: 0.0\r\nX-Spam-hits: BAYES_60 1.5, EMPTY_MESSAGE 2.32, RCVD_IN_DNSWL_HI -5,\r\n  RP_MATCHES_RCVD -2.426, LANGUAGES unknown, BAYES_USED global,\r\n  SA_VERSION 3.3.2\r\nX-Spam-source: IP='204.121.3.52', Host='proofpoint4.theserver.net', Country='US',\r\n  FromHeader='gov', MailFrom='gov', XOriginatingCountry='US'\r\nX-Spam-charsets: plain='iso-8859-1'\r\nX-Resolved-to: otheruser@fastmail.fm\r\nX-Delivered-to: otheruser@fastmail.fm\r\nX-Mail-from: theuser@theserver.net\r\nReceived: from mx2 ([10.202.2.201])\r\n  by compute4.internal (LMTPProxy); Sat, 07 Sep 2013 12:07:15 -0400\r\nReceived: from proofpoint4.theserver.net (proofpoint4.theserver.net [204.121.3.52])\r\n    (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))\r\n    (No client certificate requested)\r\n    by mx2.theotherserver.com (Postfix) with ESMTPS id E3BA06C03CC\r\n    for <otheruser@fastmail.fm>; Sat,  7 Sep 2013 12:07:11 -0400 (EDT)\r\nReceived: from mailrelay1.theserver.net (mailrelay1.theserver.net [210.210.4.101])\r\n    by mailgate4.theserver.net (8.14.5/8.14.5) with ESMTP id r87G774w018537\r\n    for <otheruser@fastmail.fm>; Sat, 7 Sep 2013 10:07:09 -0600\r\nReceived: from localhost (localhost.localdomain [127.0.0.1])\r\n    by mailrelay1.theserver.net (Postfix) with ESMTP id 8354D27115E\r\n    for <otheruser@fastmail.fm>; Sat,  7 Sep 2013 10:07:07 -0600 (MDT)\r\nX-NIE-2-Virus-Scanner: amavisd-new at mailrelay1.theserver.net\r\nReceived: from ECS-EXG-P-CH05.win.theserver.net (ecs-exg-p-ch05.win.theserver.net [210.210.106.15])\r\n    by mailrelay1.theserver.net (Postfix) with ESMTP id 73B1C27115B\r\n    for <otheruser@fastmail.fm>; Sat,  7 Sep 2013 10:07:07 -0600 (MDT)\r\nReceived: from ECS-EXG-P-MB01.win.theserver.net ([169.254.1.76]) by\r\n ECS-EXG-P-CH05.win.theserver.net ([210.210.106.15]) with mapi id 14.03.0158.001;\r\n Sat, 7 Sep 2013 10:07:07 -0600\r\nFrom: \"User, The\" <theuser@theserver.net>\r\nTo: \"'otheruser@fastmail.fm'\" <otheruser@fastmail.fm>\r\nSubject:\r\nThread-Index: Ac6r5Ewm50Kx8q/7SmW+wzWdp9MaYw==\r\nDate: Sat, 7 Sep 2013 16:07:06 +0000\r\nMessage-ID: <532C594B7920A549A2A91CB4312CC576335E03AC@ECS-EXG-P-MB01.win.theserver.net>\r\nAccept-Language: en-US\r\nContent-Language: en-US\r\nX-MS-Has-Attach:\r\nX-MS-TNEF-Correlator:\r\nx-originating-ip: [210.210.106.201]\r\nContent-Type: text/plain; charset=\"iso-8859-1\"\r\nContent-Transfer-Encoding: quoted-printable\r\nMIME-Version: 1.0\r\nX-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10432:5.10.8794,1.0.431,0.0.0000\r\n definitions=2013-09-07_01:2013-09-06,2013-09-07,1970-01-01 signatures=0\r\n\r\n";
+
+	var tbParanoia = utils.getTestWindow().tbParanoia;
+	var headers = tbParanoia.paranoiaParseHeaderString(headersStr);
+	assert.equals(32, headers.length);
+	var receivedHeaders = tbParanoia.paranoiaGetReceivedHeaders(headers);
+	Application.console.log(receivedHeaders);
+	assert.equals(6, receivedHeaders.length);
+
+	for(var i = 0; i < receivedHeaders.length; i++) {
+		Application.console.log(receivedHeaders[i].from);
+		Application.console.log(receivedHeaders[i].fromIP);
+		assert.notEquals(null, receivedHeaders[i].fromIP);
+	}
+}
