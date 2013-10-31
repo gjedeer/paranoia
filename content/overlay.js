@@ -181,6 +181,8 @@ if (typeof(tbParanoia) === "undefined") {
 				'interia.pl' : 'interia',
 				'yahoo.com' : 'yahoo',
 				'hotmail.com' : 'hotmail',
+				'outlook.com' : 'hotmail',
+				'live.com' : 'hotmail',
 				'qq.com' : 'qq',
 				'gadu-gadu.pl' : 'gadu',
 				'amazonses.com' : 'amazon',
