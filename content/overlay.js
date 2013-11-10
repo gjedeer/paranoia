@@ -346,7 +346,7 @@ if (typeof(tbParanoia) === "undefined") {
 		/* Return true if host is on a local network */
 		paranoiaIsHostLocal: function(hostname) {
 			if(hostname == 'localhost') return true;
-			if(hostname == '[127.0.0.1]') return true;
+			if(hostname == '127.0.0.1') return true;
 			if(hostname == 'Internal') return true;
 			if(hostname == 'www-data') return true;
 			if(/^\.internal$/g.test(hostname)) return true; 
