@@ -345,12 +345,13 @@ if (typeof(tbParanoia) === "undefined") {
 
 		/* Return true if host is on a local network */
 		paranoiaIsHostLocal: function(hostname) {
+			hostname = hostname.replace(/[\[\]]/,'');
 			if(hostname == 'localhost') return true;
-			if(hostname == '[127.0.0.1]') return true;
+			if(hostname == '127.0.0.1') return true;
 			if(hostname == 'Internal') return true;
 			if(hostname == 'www-data') return true;
 			if(/^\.internal$/g.test(hostname)) return true; 
-			if(/(^\[10\.)|(^\[172\.1[6-9]\.)|(^\[172\.2[0-9]\.)|(^\[172\.3[0-1]\.)|(^\[192\.168\.)/g.test(hostname)) return true;
+			if(/(^10\.)|(^172\.1[6-9]\.)|(^\172\.2[0-9]\.)|(^\172\.3[0-1]\.)|(^\192\.168\.)/g.test(hostname)) return true;
 			return false;
 		},
 
