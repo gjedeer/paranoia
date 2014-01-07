@@ -105,11 +105,11 @@ if (typeof(tbParanoia) === "undefined") {
 					}
 				}
 
-				if(matchedFrom === null || matchedTo === null || matchedMethod === null) continue;
+				if((matchedFrom === null && matchedFromIP == null) || matchedTo === null || matchedMethod === null) continue;
 
-				var local = tbParanoia.paranoiaIsHostLocal(matchedFrom) || 
+				var local = (matchedFrom && tbParanoia.paranoiaIsHostLocal(matchedFrom)) || 
 				tbParanoia.paranoiaIsHostLocal(matchedTo) ||
-				tbParanoia.paranoiaIsHostLocal(matchedFromIP) ||
+				(matchedFromIP && tbParanoia.paranoiaIsHostLocal(matchedFromIP)) ||
 				tbParanoia.paranoiaGetDomainName(matchedFrom) == tbParanoia.paranoiaGetDomainName(matchedTo) ||
 				matchedMethod == 'local' ||
 				matchedFrom.replace(/^\s+|\s+$/g, '') == matchedTo.replace(/^\s+|\s+$/g, ''); // trim
