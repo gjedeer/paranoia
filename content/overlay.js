@@ -142,6 +142,7 @@ if (typeof(tbParanoia) === "undefined") {
 				'gadu': 'Gadu Gadu',
 				'qq': 'QQ',
 				'home': 'Home.pl',
+				'gmx': 'GMX',
 			}
 
 			if(providerDisplayNames[provider]) {
@@ -189,13 +190,15 @@ if (typeof(tbParanoia) === "undefined") {
 				'amazon.com' : 'amazon',
 				'home.pl' : 'home',
 				'home.net.pl' : 'home',
+				'gmx.com': 'gmx',
+				'gmx.net': 'gmx',
 			};
 
 			var found = new Array();
 
 			receivedHeaders.forEach(function(hdr) {
 				var domainRegex = /(?:\.|^)([a-z0-9\-]+\.[a-z0-9\-]+)$/g;
-				var thirdLevelDomain = /^(net|com|org|biz)\.[a-z0-9]+$/g;
+				var thirdLevelDomain = /^(net|com|org|biz|info)\.[a-z0-9]+$/g;
 				var thirdLevelDomainRegex = /(?:\.|^)([a-z0-9\-]+\.[a-z0-9\-]+\.[a-z0-9\-]+)$/g;
 
 				var match = domainRegex.exec(hdr.from.toLowerCase());
