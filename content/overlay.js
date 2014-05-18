@@ -166,6 +166,7 @@ if (typeof(tbParanoia) === "undefined") {
 				'facebook.com' : 'facebook',
 				'mailgun.us' : 'rackspace',
 				'mailgun.org' : 'rackspace',
+				'mailgun.net' : 'rackspace',
 				'emailsrvr.com' : 'rackspace',
 				'rackspace.com' : 'rackspace',
 				'dreamhost.com' : 'dreamhost',
