@@ -73,64 +73,69 @@ if (typeof(tbParanoia) === "undefined") {
 		/* Return only 'Received:' headers, parsed to objects */
 		paranoiaGetReceivedHeaders: function(parsedHeaders) {
 			var received = Array();
-			var secureMethods = ['SMTPS', 'ESMTPS', 'SMTPSA', 'ESMTPSA', 'AES256'];
-
 			for(var i = 0; i < parsedHeaders.length; i++) {
-				/* Regexp definition must stay in the loop - stupid JS won't match the same regexp twice */
-				var rcvdRegexp = /^Received:.*from\s+([^ ]+)\s+.*by ([^ ]+)\s+.*with\s+([A-Za-z0-9]+).*;.*$/g;
-				var rcvdIPRegexp = /^Received:.*from\s+([^ ]+)\s+[^\[]+\[(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})\].*by ([^ ]+)\s+.*with\s+([A-Za-z0-9]+).*;.*$/g;
-				var header = parsedHeaders[i];
-
-				var matchedFrom = null;
-				var matchedTo = null;
-				var matchedMethod = null;
-				var matchedFromIP = null;
-
-				/* Try one regexp first */
-				var match = rcvdIPRegexp.exec(header);
-				if(match) {
-					matchedFrom = match[1];
-					matchedFromIP = match[2];
-					matchedTo = match[3];
-					matchedMethod = match[4];
+				var parsed= tbParanoia.paranoiaParseReceivedHeader(parsedHeaders[i]);
+				if (parsed != void 0) {
+					received.push(parsed);
 				}
-
-				/* Try another, if the first one failed */
-                if(!matchedFrom) {
-					var match = rcvdRegexp.exec(header);
-					if(match) {
-						matchedFrom = match[1];
-						matchedTo = match[2];
-						matchedMethod = match[3];
-					}
-				}
-
-				if((matchedFrom === null && matchedFromIP == null) || matchedTo === null || matchedMethod === null) continue;
-
-				var local = (matchedFrom && tbParanoia.paranoiaIsHostLocal(matchedFrom)) || 
-				tbParanoia.paranoiaIsHostLocal(matchedTo) ||
-				(matchedFromIP && tbParanoia.paranoiaIsHostLocal(matchedFromIP)) ||
-				tbParanoia.paranoiaGetDomainName(matchedFrom) == tbParanoia.paranoiaGetDomainName(matchedTo) ||
-				matchedMethod == 'local' ||
-				matchedFrom.replace(/^\s+|\s+$/g, '') == matchedTo.replace(/^\s+|\s+$/g, ''); // trim
-
-				received.push({
-					from: matchedFrom,
-					fromIP: matchedFromIP,
-					to: matchedTo,
-					method: matchedMethod,
-					local: local,
-					secure: (secureMethods.indexOf(matchedMethod.toUpperCase()) != -1),
-					toString: function() {
-						var secureSign = this.secure ? '✓' : '✗';
-						if(this.local) secureSign = '⌂';
-						return secureSign + ' ' + this.method + ": " + this.from + " ==> " + this.to;
-					}
-				});
 			}
-
 			return received;
 		},
+
+		paranoiaParseReceivedHeader: function(header) {
+			var secureMethods = ['SMTPS', 'ESMTPS', 'SMTPSA', 'ESMTPSA', 'AES256'];
+
+			/* Regexp definition must stay in the loop - stupid JS won't match the same regexp twice */
+			var rcvdRegexp = /^Received:.*from\s+([^ ]+)\s+.*by ([^ ]+)\s+.*with\s+([A-Za-z0-9]+).*;.*$/g;
+			var rcvdIPRegexp = /^Received:.*from\s+([^ ]+)\s+[^\[]+\[(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})\].*by ([^ ]+)\s+.*with\s+([A-Za-z0-9]+).*;.*$/g;
+
+			var matchedFrom = null;
+			var matchedTo = null;
+			var matchedMethod = null;
+			var matchedFromIP = null;
+
+			/* Try one regexp first */
+			var match = rcvdIPRegexp.exec(header);
+			if(match) {
+				matchedFrom = match[1];
+				matchedFromIP = match[2];
+				matchedTo = match[3];
+				matchedMethod = match[4];
+			}
+
+			/* Try another, if the first one failed */
+			if(!matchedFrom) {
+				var match = rcvdRegexp.exec(header);
+				if(match) {
+					matchedFrom = match[1];
+					matchedTo = match[2];
+					matchedMethod = match[3];
+				}
+			}
+
+			if((matchedFrom === null && matchedFromIP == null) || matchedTo === null || matchedMethod === null) return void 0;
+
+			var local = (matchedFrom && tbParanoia.paranoiaIsHostLocal(matchedFrom)) ||
+			tbParanoia.paranoiaIsHostLocal(matchedTo) ||
+			(matchedFromIP && tbParanoia.paranoiaIsHostLocal(matchedFromIP)) ||
+			tbParanoia.paranoiaGetDomainName(matchedFrom) == tbParanoia.paranoiaGetDomainName(matchedTo) ||
+			matchedMethod == 'local' ||
+			matchedFrom.replace(/^\s+|\s+$/g, '') == matchedTo.replace(/^\s+|\s+$/g, ''); // trim
+
+			return {
+				from: matchedFrom,
+				fromIP: matchedFromIP,
+				to: matchedTo,
+				method: matchedMethod,
+				local: local,
+				secure: (secureMethods.indexOf(matchedMethod.toUpperCase()) != -1),
+				toString: function() {
+					var secureSign = this.secure ? '✓' : '✗';
+					if(this.local) secureSign = '⌂';
+					return secureSign + ' ' + this.method + ": " + this.from + " ==> " + this.to;
+				}
+			};
+        },
 
 		/* Changes 'yandex' to 'Яндекс' */
 		paranoiaGetProviderDisplayName: function(provider) {
