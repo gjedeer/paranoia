@@ -40,97 +40,75 @@
 
 if (typeof(tbParanoia) === "undefined") {
 	var tbParanoia = {
-		/* Parse RFC-2822 header */
-		paranoiaParseHeaderString: function(headersStr) {
-			var headers = tbParanoia.paranoiaParseHeaderStringWithSplitter("\r\n",headersStr);
-			if (headers.length == 0) {
-				headers = tbParanoia.paranoiaParseHeaderStringWithSplitter("\n",headersStr);
-			}
-			return headers;
-		},
-		paranoiaParseHeaderStringWithSplitter: function(splitStr, headersStr) {
-			var hdrLines = headersStr.split(splitStr);
-			var headers = Array();
-			var currentHeader = "";
-
-			for(var i = 0; i < hdrLines.length; i++) {
-				line = hdrLines[i];
-				/* Strip spaces from start and end of line */
-				if(line[0] == " " || line[0] == "\t") {
-					currentHeader += " " + line.replace(/^\s+|\s+$/g, '');
-				}
-				else
-				{
-					/* No spaces - this is start of a new header */
-					if(currentHeader.length > 0) headers.push(currentHeader);
-					var currentHeader = line;
-				}
-			};
-
-			return headers;
-		},
 
 		/* Return only 'Received:' headers, parsed to objects */
-		paranoiaGetReceivedHeaders: function(parsedHeaders) {
+		paranoiaGetReceivedHeaders: function(headers) {
 			var received = Array();
-			var secureMethods = ['SMTPS', 'ESMTPS', 'SMTPSA', 'ESMTPSA', 'AES256'];
-
-			for(var i = 0; i < parsedHeaders.length; i++) {
-				/* Regexp definition must stay in the loop - stupid JS won't match the same regexp twice */
-				var rcvdRegexp = /^Received:.*from\s+([^ ]+)\s+.*by ([^ ]+)\s+.*with\s+([A-Za-z0-9]+).*;.*$/g;
-				var rcvdIPRegexp = /^Received:.*from\s+([^ ]+)\s+[^\[]+\[(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})\].*by ([^ ]+)\s+.*with\s+([A-Za-z0-9]+).*;.*$/g;
-				var header = parsedHeaders[i];
-
-				var matchedFrom = null;
-				var matchedTo = null;
-				var matchedMethod = null;
-				var matchedFromIP = null;
-
-				/* Try one regexp first */
-				var match = rcvdIPRegexp.exec(header);
-				if(match) {
-					matchedFrom = match[1];
-					matchedFromIP = match[2];
-					matchedTo = match[3];
-					matchedMethod = match[4];
-				}
-
-				/* Try another, if the first one failed */
-                if(!matchedFrom) {
-					var match = rcvdRegexp.exec(header);
-					if(match) {
-						matchedFrom = match[1];
-						matchedTo = match[2];
-						matchedMethod = match[3];
-					}
-				}
-
-				if((matchedFrom === null && matchedFromIP == null) || matchedTo === null || matchedMethod === null) continue;
-
-				var local = (matchedFrom && tbParanoia.paranoiaIsHostLocal(matchedFrom)) || 
-				tbParanoia.paranoiaIsHostLocal(matchedTo) ||
-				(matchedFromIP && tbParanoia.paranoiaIsHostLocal(matchedFromIP)) ||
-				tbParanoia.paranoiaGetDomainName(matchedFrom) == tbParanoia.paranoiaGetDomainName(matchedTo) ||
-				matchedMethod == 'local' ||
-				matchedFrom.replace(/^\s+|\s+$/g, '') == matchedTo.replace(/^\s+|\s+$/g, ''); // trim
-
-				received.push({
-					from: matchedFrom,
-					fromIP: matchedFromIP,
-					to: matchedTo,
-					method: matchedMethod,
-					local: local,
-					secure: (secureMethods.indexOf(matchedMethod.toUpperCase()) != -1),
-					toString: function() {
-						var secureSign = this.secure ? '✓' : '✗';
-						if(this.local) secureSign = '⌂';
-						return secureSign + ' ' + this.method + ": " + this.from + " ==> " + this.to;
+			if ('received' in headers) {
+				headers['received'].forEach(function(header) {
+					var parsed= tbParanoia.paranoiaParseReceivedHeader(header);
+					if (parsed != void 0) {
+						received.push(parsed);
 					}
 				});
 			}
-
 			return received;
 		},
+
+		paranoiaParseReceivedHeader: function(header) {
+			var secureMethods = ['SMTPS', 'ESMTPS', 'SMTPSA', 'ESMTPSA', 'AES256'];
+
+			/* Regexp definition must stay in the loop - stupid JS won't match the same regexp twice */
+			var rcvdRegexp = /^.*from\s+([^ ]+)\s+.*by ([^ ]+)\s+.*with\s+([A-Za-z0-9]+).*;.*$/g;
+			var rcvdIPRegexp = /^.*from\s+([^ ]+)\s+[^\[]+\[(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})\].*by ([^ ]+)\s+.*with\s+([A-Za-z0-9]+).*;.*$/g;
+
+			var matchedFrom = null;
+			var matchedTo = null;
+			var matchedMethod = null;
+			var matchedFromIP = null;
+
+			/* Try one regexp first */
+			var match = rcvdIPRegexp.exec(header);
+			if(match) {
+				matchedFrom = match[1];
+				matchedFromIP = match[2];
+				matchedTo = match[3];
+				matchedMethod = match[4];
+			}
+
+			/* Try another, if the first one failed */
+			if(!matchedFrom) {
+				var match = rcvdRegexp.exec(header);
+				if(match) {
+					matchedFrom = match[1];
+					matchedTo = match[2];
+					matchedMethod = match[3];
+				}
+			}
+
+			if((matchedFrom === null && matchedFromIP == null) || matchedTo === null || matchedMethod === null) return void 0;
+
+			var local = (matchedFrom && tbParanoia.paranoiaIsHostLocal(matchedFrom)) ||
+			tbParanoia.paranoiaIsHostLocal(matchedTo) ||
+			(matchedFromIP && tbParanoia.paranoiaIsHostLocal(matchedFromIP)) ||
+			tbParanoia.paranoiaGetDomainName(matchedFrom) == tbParanoia.paranoiaGetDomainName(matchedTo) ||
+			matchedMethod == 'local' ||
+			matchedFrom.replace(/^\s+|\s+$/g, '') == matchedTo.replace(/^\s+|\s+$/g, ''); // trim
+
+			return {
+				from: matchedFrom,
+				fromIP: matchedFromIP,
+				to: matchedTo,
+				method: matchedMethod,
+				local: local,
+				secure: (secureMethods.indexOf(matchedMethod.toUpperCase()) != -1),
+				toString: function() {
+					var secureSign = this.secure ? '✓' : '✗';
+					if(this.local) secureSign = '⌂';
+					return secureSign + ' ' + this.method + ": " + this.from + " ==> " + this.to;
+				}
+			};
+        },
 
 		/* Changes 'yandex' to 'Яндекс' */
 		paranoiaGetProviderDisplayName: function(provider) {
@@ -388,27 +366,8 @@ if (typeof(tbParanoia) === "undefined") {
 					var folder = msg.folder;
 					if(tbParanoia.paranoiaIsFeedFolder(folder)) return;
 
-					var offset = new Object();
-					var messageSize = new Object();
-
-					// https://github.com/clear-code/changequote/blob/0f5a09d3887d97446553d6225cc9f71dc2a75039/content/changequote/changequote.jsh
-					// http://thunderbirddocs.blogspot.com/2005/02/thunderbird-extensions-how-to-get-body.html
-					try {
-						var stream = folder.getOfflineFileStream(msg.messageKey, offset, messageSize);
-						var scriptableStream=Components.classes["@mozilla.org/scriptableinputstream;1"].getService(Components.interfaces.nsIScriptableInputStream);
-
-						scriptableStream.init(stream);
-						var fullBody = scriptableStream.read(msg.messageSize);
-						var headersStr = fullBody.substring(0, fullBody.indexOf("\r\n\r\n"));
-						if (headersStr.length == 0) { 
-						  headersStr = fullBody.substring(0, fullBody.indexOf("\n\n"));
-						}
-						scriptableStream.close();
-						stream.close();
-
-						/* We've got the headers string, let's parse it */
-						var headers = tbParanoia.paranoiaParseHeaderString(headersStr);
-						var receivedHeaders = tbParanoia.paranoiaGetReceivedHeaders(headers);
+					MsgHdrToMimeMessage(msg, null, function (aMsgHdr, aMimeMsg) {
+						var receivedHeaders = tbParanoia.paranoiaGetReceivedHeaders(aMimeMsg.headers);
 
 						var providers = tbParanoia.paranoiaGetKnownProviders(receivedHeaders);
 
@@ -453,10 +412,9 @@ if (typeof(tbParanoia) === "undefined") {
 								throw e;
 							}
 						}
-					}
-					catch(e) {
-						Application.console.log("PROBLEM with Paranoia: " + e.message);
-					}
+					}, true, {
+						partsOnDemand: true,
+					});
 				},
 				onEndHeaders: function() {
 				},  
