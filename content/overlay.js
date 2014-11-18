@@ -145,6 +145,7 @@ if (typeof(tbParanoia) === "undefined") {
 				'mailgun.us' : 'rackspace',
 				'mailgun.org' : 'rackspace',
 				'mailgun.net' : 'rackspace',
+				'mailgun.info' : 'rackspace',
 				'emailsrvr.com' : 'rackspace',
 				'rackspace.com' : 'rackspace',
 				'dreamhost.com' : 'dreamhost',
