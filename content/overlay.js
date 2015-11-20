@@ -61,6 +61,9 @@ if (typeof(tbParanoia) === "undefined") {
 			/* Regexp definition must stay in the loop - stupid JS won't match the same regexp twice */
 			var rcvdRegexp = /^.*from\s+([^ ]+)\s+.*by ([^ ]+)\s+.*with\s+([-A-Za-z0-9]+).*;.*$/g;
 			var rcvdIPRegexp = /^.*from\s+([^ ]+)\s+[^\[]+\[(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})\].*by ([^ ]+)\s+.*with\s+([-A-Za-z0-9]+).*;.*$/g;
+			/* Received: from github-smtp2a-ext-cp1-prd.iad.github.net ([192.30.252.192]) by BAY004-PAMC2F9.hotmail.com over TLS secured channel with Microsoft SMTPSVC(7.5.7601.23143);
+			 * Sat, 14 Nov 2015 22:30:08 -0800 */
+			var rcvdMicrosoftRegexp = /^.*from\s+([^ ]+)\s+[^\[]+\[(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})\].*by ([^ ]+)\s+.*over TLS secured channel with\s+.*;.*$/g;
 
 			var matchedFrom = null;
 			var matchedTo = null;
@@ -77,6 +80,16 @@ if (typeof(tbParanoia) === "undefined") {
 			}
 
 			/* Try another, if the first one failed */
+			if(!matchedFrom) {
+				var match = rcvdMicrosoftRegexp.exec(header);
+				if(match) {
+					matchedFrom = match[1];
+					matchedFromIP = match[2];
+					matchedTo = match[3];
+					matchedMethod = match[4];
+					matchedMethod = 'SMTP-TLS';
+				}
+			}
 			if(!matchedFrom) {
 				var match = rcvdRegexp.exec(header);
 				if(match) {
