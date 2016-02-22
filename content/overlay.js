@@ -57,6 +57,7 @@ if (typeof(tbParanoia) === "undefined") {
 
 		paranoiaParseReceivedHeader: function(header) {
 			var secureMethods = ['SMTPS', 'ESMTPS', 'SMTPSA', 'ESMTPSA', 'AES256', 'AES128', 'SMTP-TLS'];
+			var unknownMethods = ['IMAP'];
 
 			/* Regexp definition must stay in the loop - stupid JS won't match the same regexp twice */
 			var rcvdRegexp = /^.*from\s+([^ ]+)\s+.*by ([^ ]+)\s+.*with\s+([-A-Za-z0-9]+).*;.*$/g;
@@ -102,9 +103,11 @@ if (typeof(tbParanoia) === "undefined") {
 				method: matchedMethod,
 				local: local,
 				secure: (secureMethods.indexOf(matchedMethod.toUpperCase()) != -1),
+				unknown: (unknownMethods.indexOf(matchedMethod.toUpperCase()) != -1),
 				toString: function() {
 					var secureSign = this.secure ? '✓' : '✗';
 					if(this.local) secureSign = '⌂';
+					if(unknownMethods.indexOf(matchedMethod.toUpperCase()) != -1) secureSign = '?';
 					return secureSign + ' ' + this.method + ": " + this.from + " ==> " + this.to;
 				}
 			};
@@ -209,8 +212,9 @@ if (typeof(tbParanoia) === "undefined") {
 			var encrypted = 0;
 			receivedHeaders.forEach(function(header) {
 //				Application.console.log(header.from + " - " + header.secure);
-				if(!header.secure && !header.local) insecure++;
+				if(!header.secure && !header.local && !header.unknown) insecure++;
 				if(!header.secure && header.local) unencryptedLocal++;
+				if(!header.secure && header.unknown) unencryptedLocal++;
 				if(header.secure) encrypted++;
 			});
 
