@@ -57,7 +57,7 @@ if (typeof(tbParanoia) === "undefined") {
 
 		paranoiaParseReceivedHeader: function(header) {
 			var secureMethods = ['SMTPS', 'ESMTPS', 'SMTPSA', 'ESMTPSA', 'AES256', 'AES128', 'SMTP-TLS'];
-			var unknownMethods = ['IMAP'];
+			var unknownMethods = ['IMAP', 'LMTP'];
 
 			/* Regexp definition must stay in the loop - stupid JS won't match the same regexp twice */
 			var rcvdRegexp = /^.*from\s+([^ ]+)\s+.*by ([^ ]+)\s+.*with\s+([-A-Za-z0-9]+).*;.*$/g;
