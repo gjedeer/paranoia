@@ -56,7 +56,13 @@ if (typeof(tbParanoia) === "undefined") {
 		},
 
 		paranoiaParseReceivedHeader: function(header) {
-			var secureMethods = ['SMTPS', 'ESMTPS', 'SMTPSA', 'ESMTPSA', 'AES256', 'AES128', 'SMTP-TLS'];
+			/* List is based on https://www.iana.org/assignments/mail-parameters/mail-parameters.xhtml#mail-parameters-7 */
+			var secureMethods = ['SMTPS', 'ESMTPS',
+					     'SMTPSA', 'ESMTPSA',
+					     'AES256', 'AES128', 'SMTP-TLS', // Note: not in the list of the official Mail Transmission Types. 
+					     'UTF8SMTPS', 'UTF8SMTPSA',
+					     'LMTPS', 'LMTPSA',
+					     'UTF8LMTPS', 'UTF8LMTPSA'];
 			var unknownMethods = ['IMAP', 'LMTP'];
 
 			/* Regexp definition must stay in the loop - stupid JS won't match the same regexp twice */
