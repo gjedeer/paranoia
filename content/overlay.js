@@ -57,6 +57,7 @@ if (typeof(tbParanoia) === "undefined") {
 
 		paranoiaParseReceivedHeader: function(header) {
 			var secureMethods = ['SMTPS', 'ESMTPS', 'SMTPSA', 'ESMTPSA', 'AES256', 'AES128', 'SMTP-TLS'];
+			var additionalSecureMethods = ['with ESMTP/TLS', 'with ESMTP (TLS encrypted)', 'version=TLSv', 'using TLSv', 'over TLS secured channel']
 
 			/* Regexp definition must stay in the loop - stupid JS won't match the same regexp twice */
 			var rcvdRegexp = /^.*from\s+([^ ]+)\s+.*by ([^ ]+)\s+.*with\s+([-A-Za-z0-9]+).*;.*$/g;
@@ -95,13 +96,23 @@ if (typeof(tbParanoia) === "undefined") {
 			matchedMethod == 'local' ||
 			matchedFrom.replace(/^\s+|\s+$/g, '') == matchedTo.replace(/^\s+|\s+$/g, ''); // trim
 
+			var isSecure = (secureMethods.indexOf(matchedMethod.toUpperCase()) != -1);
+			if(!isSecure) {
+				for(var i = 0; i < additionalSecureMethods.length; i++) {
+					if(header.indexOf(additionalSecureMethods[i])) {
+						isSecure = true;
+						break;
+					}
+				}
+			}
+
 			return {
 				from: matchedFrom,
 				fromIP: matchedFromIP,
 				to: matchedTo,
 				method: matchedMethod,
 				local: local,
-				secure: (secureMethods.indexOf(matchedMethod.toUpperCase()) != -1),
+				secure: isSecure,
 				toString: function() {
 					var secureSign = this.secure ? '✓' : '✗';
 					if(this.local) secureSign = '⌂';
