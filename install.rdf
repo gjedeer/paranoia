@@ -6,7 +6,7 @@
 
   <Description about="urn:mozilla:install-manifest">
     <em:id>tls-paranoia@gdr.name</em:id>
-    <em:version>0.2.6</em:version>
+    <em:version>0.2.7</em:version>
 	<em:type>2</em:type>
     
     <!-- Target Application this theme can install into, 
@@ -15,7 +15,7 @@
       <Description>
         <em:id>{3550f703-e582-4d05-9a08-453d09bdfdc6}</em:id> <!-- Thunderbird -->
         <em:minVersion>17.0</em:minVersion>
-        <em:maxVersion>46.0</em:maxVersion>
+        <em:maxVersion>60.*</em:maxVersion>
       </Description>
     </em:targetApplication>
     
