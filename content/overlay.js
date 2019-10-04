@@ -106,7 +106,7 @@ if (typeof(tbParanoia) === "undefined") {
 			var isSecure = (secureMethods.indexOf(matchedMethod.toUpperCase()) != -1);
 			if(!isSecure) {
 				for(var i = 0; i < additionalSecureMethods.length; i++) {
-					if(header.indexOf(additionalSecureMethods[i])) {
+					if(header.indexOf(additionalSecureMethods[i]) != -1) {
 						isSecure = true;
 						break;
 					}
