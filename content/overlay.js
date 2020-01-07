@@ -67,8 +67,8 @@ if (typeof(tbParanoia) === "undefined") {
 			var unknownMethods = ['IMAP', 'LMTP'];
 
 			/* Regexp definition must stay in the loop - stupid JS won't match the same regexp twice */
-			var rcvdRegexp = /^.*from\s+([^ ]+)\s+.*by ([^ ]+)\s+.*with\s+([-A-Za-z0-9]+).*;.*$/g;
-			var rcvdIPRegexp = /^.*from\s+([^ ]+)\s+[^\[]+\[(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})\].*by ([^ ]+)\s+.*with\s+([-A-Za-z0-9]+).*;.*$/g;
+			var rcvdRegexp = /^.*from\s+([^ ]+)\s+.*by\s+([^ ]+)\s+.*with\s+([-A-Za-z0-9]+).*;.*$/g;
+			var rcvdIPRegexp = /^.*from\s+([^ ]+)\s+[^\[]+\[(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})\].*by\s+([^ ]+)\s+.*with\s+([-A-Za-z0-9]+).*;.*$/g;
 
 			var matchedFrom = null;
 			var matchedTo = null;
