@@ -63,34 +63,45 @@ if (typeof(tbParanoia) === "undefined") {
 					     'UTF8SMTPS', 'UTF8SMTPSA',
 					     'LMTPS', 'LMTPSA',
 					     'UTF8LMTPS', 'UTF8LMTPSA'];
-			var additionalSecureMethods = ['with ESMTP/TLS', 'with ESMTP (TLS encrypted)', 'version=TLSv', 'using TLSv', 'over TLS secured channel']
+			var additionalSecureMethods = ['with ESMTP/TLS', 'with ESMTP (TLS encrypted)', 'version=TLS', 'using TLSv', 'over TLS secured channel']
 			var unknownMethods = ['IMAP', 'LMTP'];
 
 			/* Regexp definition must stay in the loop - stupid JS won't match the same regexp twice */
 			var rcvdRegexp = /^.*from\s+([^ ]+)\s+.*by\s+([^ ]+)\s+.*with\s+([-A-Za-z0-9]+).*;.*$/g;
 			var rcvdIPRegexp = /^.*from\s+([^ ]+)\s+[^\[]+\[(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})\].*by\s+([^ ]+)\s+.*with\s+([-A-Za-z0-9]+).*;.*$/g;
+			var rcvdMicrosoftRegexp = /^.*from\s+([^ ]+)\s+.*by\s+([^ ]+)\s+.*with\s+Microsoft\s+SMTP\s+Server\s*\(([-A-Za-z0-9=_]+).*;.*$/g;
 
 			var matchedFrom = null;
 			var matchedTo = null;
 			var matchedMethod = null;
 			var matchedFromIP = null;
 
-			/* Try one regexp first */
-			var match = rcvdIPRegexp.exec(header);
+			/* Microsoft now has its own regexp */
+			var match = rcvdMicrosoftRegexp.exec(header);
 			if(match) {
 				matchedFrom = match[1];
-				matchedFromIP = match[2];
-				matchedTo = match[3];
-				matchedMethod = match[4];
+				matchedTo = match[2];
+				matchedMethod = match[3];
 			}
 
-			/* Try another, if the first one failed */
 			if(!matchedFrom) {
-				var match = rcvdRegexp.exec(header);
+				/* Try one regexp first */
+				var match = rcvdIPRegexp.exec(header);
 				if(match) {
 					matchedFrom = match[1];
-					matchedTo = match[2];
-					matchedMethod = match[3];
+					matchedFromIP = match[2];
+					matchedTo = match[3];
+					matchedMethod = match[4];
+				}
+
+				/* Try another, if the first one failed */
+				if(!matchedFrom) {
+					var match = rcvdRegexp.exec(header);
+					if(match) {
+						matchedFrom = match[1];
+						matchedTo = match[2];
+						matchedMethod = match[3];
+					}
 				}
 			}
 
