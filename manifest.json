@@ -1,19 +1,30 @@
 {
   "manifest_version": 2,
-  "applications": {
+  "browser_specific_settings": {
     "gecko": {
       "id": "tls-paranoia@gdr.name",
-      "strict_min_version": "68.0"
+      "strict_min_version": "78.0"
     }
   },
   "name": "Paranoia",
   "description": "Check if your emails arrived encrypted (and which corporations were able to read them nevertheless)",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "icons": {
     "32": "skin/good.png"
   },
-  "legacy": {
-    "type": "xul"
+  "permissions": [
+    "messagesRead"
+  ],
+  "background": {
+    "scripts": ["content/background.js"],
+    "type": "module",
+    "persistent": false
+  },
+  "message_display_action": {
+    "default_popup": "content/popup.html",
+    "default_icon": "skin/neutral.png",
+    "default_title": "paranoia",
+    "default_label": " "
   },
   "author": "GDR!",
   "homepage_url": "https://github.com/gjedeer/paranoia"
