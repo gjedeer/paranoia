@@ -34,6 +34,14 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
+export async function getPopup(msg) {
+	return await tbParanoia.calculateParanoiaLevel(msg, true);
+};
+
+export function callCalculateParanoiaLevel(msg) {
+	tbParanoia.calculateParanoiaLevel(msg, false);
+};
+
 /**
  * tbParanoia namespace
  */
@@ -267,6 +275,18 @@ if (typeof(tbParanoia) === "undefined") {
 			return popup;
 		},
 
+		/* Create an element with all 'Received:' headers */
+		paranoiaCreateReceivedPopupAsText: function(receivedHeaders) {
+			var popup = document.createElement('div');
+			popup.setAttribute('id', 'paranoiaConnectionList');
+			receivedHeaders.forEach(function(hdr) {
+				var item = document.createElement('div');
+				item.textContent = hdr.toString();
+				popup.appendChild(item);
+			});
+			return popup;
+		},
+
 		/* Remove popup from DOM tree, if found */
 		paranoiaRemoveReceivedPopup: function() {
 			var elem = document.getElementById('paranoiaConnectionList');
@@ -297,40 +317,55 @@ if (typeof(tbParanoia) === "undefined") {
 			return elem;
 		},
 
+		/* Return icon - create one if necessary */
+		/* Icon here is only being used as storage since it is not rendered in the backgound page */
+		paranoiaGetIconDOM: function() {
+			var id = 'paranoiaHdrIcon';
+			if(document.getElementById(id))
+			{
+				return document.getElementById(id);
+			}
+
+			var elem = document.createElement('image');
+			elem.setAttribute('id', id);
+			document.body.appendChild(elem);
+			return elem;
+		},
+
 		paranoiaSetPerfectIcon: function() {
-			var icon = tbParanoia.paranoiaGetHdrIconDOM();
-			icon.setAttribute('style', 'list-style-image: url("chrome://demo/skin/perfect.png")');
+			var icon = tbParanoia.paranoiaGetIconDOM();
+			icon.setAttribute('src', './skin/perfect.png');
 			icon.setAttribute('tooltiptext', 'Perfect - no known email providers and encryption between all hops');
 			return icon;
 		},
 
 		paranoiaSetGoodIcon: function() {
-			var icon = tbParanoia.paranoiaGetHdrIconDOM();
-			icon.setAttribute('style', 'list-style-image: url("chrome://demo/skin/good.png")');
+			var icon = tbParanoia.paranoiaGetIconDOM();
+			icon.setAttribute('src', './skin/good.png');
 			icon.setAttribute('tooltiptext', 'Good - Email passed known providers or was unencrypted only on a local connection');
 			return icon;
 		},
 
 		paranoiaSetBadIcon: function() {
-			var icon = tbParanoia.paranoiaGetHdrIconDOM();
-			icon.setAttribute('style', 'list-style-image: url("chrome://demo/skin/bad.png")');
+			var icon = tbParanoia.paranoiaGetIconDOM();
+			icon.setAttribute('src', './skin/bad.png');
 			icon.setAttribute('tooltiptext', '1 non-local connection on the way was unencrypted');
 			return icon;
 		},
 
 		paranoiaSetTragicIcon: function() {
-			var icon = tbParanoia.paranoiaGetHdrIconDOM();
-			icon.setAttribute('style', 'list-style-image: url("chrome://demo/skin/tragic.png")');
+			var icon = tbParanoia.paranoiaGetIconDOM();
+			icon.setAttribute('src', './skin/tragic.png');
 			icon.setAttribute('tooltiptext', 'More than 1 connection on the way was unencrypted');
 			return icon;
 		},
 
 		paranoiaAddProviderIcon: function(providerName, parentBox) {
-			var previousBox = tbParanoia.paranoiaGetHdrIconDOM();
+			var previousBox = tbParanoia.paranoiaGetIconDOM();
 
 			var elem = document.createElement('image');
 			elem.setAttribute('class', 'paranoiaProvider');
-			elem.setAttribute('style', 'list-style-image: url("chrome://demo/skin/providers/' + providerName + '.png")');
+			elem.setAttribute('src', './skin/providers/' + providerName + '.png');
 			elem.setAttribute('tooltiptext', tbParanoia.paranoiaGetProviderDisplayName(providerName));
 			parentBox.appendChild(elem);
 		},
@@ -457,9 +492,54 @@ if (typeof(tbParanoia) === "undefined") {
 				onBeforeShowHeaderPane: function () {
 				}
 			});
-		} // init()
+		}, // init()
+
+		/* New function for main logic after porting to MailExtensions*/
+		calculateParanoiaLevel: function(msg, returnPopup) {
+			return messenger.messages.getFull(msg.id).then((messagePart) => {
+				var icon = tbParanoia.paranoiaSetBadIcon(); // safe default
+
+				var receivedHeaders = tbParanoia.paranoiaGetReceivedHeaders(messagePart.headers);
+				var providers = tbParanoia.paranoiaGetKnownProviders(receivedHeaders);
+
+				var security = tbParanoia.paranoiaAreReceivedHeadersInsecure(receivedHeaders);
+				if(!security.insecure && !security.unencryptedLocal && providers.length == 0) {
+					tbParanoia.paranoiaSetPerfectIcon();
+				}
+				else if(!security.insecure) {
+					icon = tbParanoia.paranoiaSetGoodIcon();
+					if(providers.length > 0 && security.unencryptedLocal > 0) {
+						icon.setAttribute('tooltiptext', 'Good: Passed known email providers and the only unencrypted connections were local');
+					}
+					else {
+						if(providers.length > 0) {
+							icon.setAttribute('tooltiptext', 'Good: Passed known email providers');
+						}
+						if(security.unencryptedLocal > 0) {
+							icon.setAttribute('tooltiptext', 'Good: The only unencrypted connections were local');
+						}
+					}
+				}
+				else if(security.insecure == 1) {
+					tbParanoia.paranoiaSetBadIcon();
+				}
+				else {
+					tbParanoia.paranoiaSetTragicIcon();
+				}
+
+				if (!returnPopup) {
+					messenger.messageDisplayAction.setIcon({path: icon.getAttribute('src')});
+					messenger.messageDisplayAction.setTitle({title: icon.getAttribute('tooltiptext')});
+				} else {
+					let popup = tbParanoia.paranoiaCreateReceivedPopupAsText(receivedHeaders);
+					return new Promise((resolve) => {
+						resolve(popup);
+					});
+				}
+			});
+		}  // calculateParanoiaLevel()
 	} // tbParanoia
 }; // if
 
-window.addEventListener("load", tbParanoia.init(), false);
+//window.addEventListener("load", tbParanoia.init(), false);
 
