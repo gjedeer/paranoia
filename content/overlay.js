@@ -261,20 +261,6 @@ if (typeof(tbParanoia) === "undefined") {
 			};
 		},
 
-		/* Create a popup menu with all 'Received:' headers. This is used by old XUL code. */
-		paranoiaCreateReceivedPopup: function(receivedHeaders) {
-			var popup = document.createElement('menupopup');
-			popup.setAttribute('id', 'paranoiaConnectionList');
-
-			receivedHeaders.forEach(function(hdr) {
-				var item = document.createElement('menuitem');
-				item.setAttribute('label', hdr.toString());
-				popup.appendChild(item);
-			});
-
-			return popup;
-		},
-
 		/* Create an element with all 'Received:' headers. This is used by new MailExtension code. */
 		paranoiaCreateReceivedPopupAsText: function(receivedHeaders) {
 			var popup = document.createElement('div');
@@ -295,36 +281,6 @@ if (typeof(tbParanoia) === "undefined") {
 			});
 			popup.appendChild(icons);
 			return popup;
-		},
-
-		/* Remove popup from DOM tree, if found */
-		paranoiaRemoveReceivedPopup: function() {
-			var elem = document.getElementById('paranoiaConnectionList');
-			if(elem) elem.parentNode.removeChild(elem);
-		},
-
-		/* Return XULElement with icon - create one if necessary */
-		paranoiaGetHdrIconDOM: function() {
-			var id = 'paranoiaHdrIcon';
-			if(document.getElementById(id))
-			{
-				return document.getElementById(id);
-			}
-
-			var parentBox = document.getElementById('dateValueBox'); ///////
-			var previousBox = document.getElementById('smimeBox');
-
-			if(!parentBox || !previousBox) {
-				Application.console.log('Chrome element not found');
-			}
-
-			var elem = document.createElement('image');
-			elem.setAttribute('id', id);
-			elem.onclick = function() {
-				document.getElementById('paranoiaConnectionList').openPopup(this, 'after_start', 0, 0, false, false);
-			}                       
-			parentBox.insertBefore(elem, previousBox);
-			return elem;
 		},
 
 		/* Return icon - create one if necessary */
@@ -434,76 +390,6 @@ if (typeof(tbParanoia) === "undefined") {
 			return /^mailbox:\/\/[^@\/]+@Feeds/.exec(folder.URI);
 		},
 
-		init: function() {
-			// http://stackoverflow.com/questions/5089405/thunderbird-extension-add-field-to-messagepane-how-to-deal-with-windows-instan
-			/* Add a listener for changed message */
-			gMessageListeners.push({
-				onStartHeaders: function() {
-					var msg = gMessageDisplay.displayedMessage;
-					if(!msg) return;
-
-					var folder = msg.folder;
-					if(tbParanoia.paranoiaIsFeedFolder(folder)) return;
-
-					MsgHdrToMimeMessage(msg, null, function (aMsgHdr, aMimeMsg) {
-						var receivedHeaders = tbParanoia.paranoiaGetReceivedHeaders(aMimeMsg.headers);
-
-						var providers = tbParanoia.paranoiaGetKnownProviders(receivedHeaders);
-
-						try {
-							var security = tbParanoia.paranoiaAreReceivedHeadersInsecure(receivedHeaders);
-							if(!security.insecure && !security.unencryptedLocal && providers.length == 0) {
-								tbParanoia.paranoiaSetPerfectIcon();
-							}
-							else if(!security.insecure) {
-								var icon = tbParanoia.paranoiaSetGoodIcon();
-								if(providers.length > 0 && security.unencryptedLocal > 0) {
-									icon.setAttribute('tooltiptext', 'Good: Passed known email providers and the only unencrypted connections were local');
-								}
-								else {
-									if(providers.length > 0) {
-										icon.setAttribute('tooltiptext', 'Good: Passed known email providers');
-									}
-									if(security.unencryptedLocal > 0) {
-										icon.setAttribute('tooltiptext', 'Good: The only unencrypted connections were local');
-									}
-								}
-							}
-							else if(security.insecure == 1) {
-								tbParanoia.paranoiaSetBadIcon();
-							}
-							else {
-								tbParanoia.paranoiaSetTragicIcon();
-							}
-
-							tbParanoia.paranoiaRemoveReceivedPopup();
-							var popup = tbParanoia.paranoiaCreateReceivedPopup(receivedHeaders);
-							document.getElementById('dateValueBox').appendChild(popup);
-//							receivedHeaders.forEach(function(hdr) {Application.console.log(hdr);});
-
-							tbParanoia.paranoiaAddProviderIcons(providers);
-						}
-						catch(e) {
-							/* Message title bar modified - Compact Headers or other extension */
-							if(e.name.toString() == "NotFoundError") {
-								Application.console.log('XUL element not found: ' + e.message);
-							} else {
-								throw e;
-							}
-						}
-					}, true, {
-						partsOnDemand: true,
-					});
-				},
-				onEndHeaders: function() {
-				},  
-				onEndAttachments: function () {
-				},
-				onBeforeShowHeaderPane: function () {
-				}
-			});
-		}, // init()
-
 		/* New function for main logic after porting to MailExtensions*/
 		calculateParanoiaLevel: function(msg, returnPopup) {
 			return messenger.messages.getFull(msg.id).then((messagePart) => {
@@ -551,5 +437,4 @@ if (typeof(tbParanoia) === "undefined") {
 	} // tbParanoia
 }; // if
 
-//window.addEventListener("load", tbParanoia.init(), false);
 
