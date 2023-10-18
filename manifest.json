@@ -12,6 +12,9 @@
   "icons": {
     "32": "skin/good.png"
   },
+  "web_accessible_resources": [
+    "skin/providers/*"
+  ],
   "permissions": [
     "messagesRead"
   ],

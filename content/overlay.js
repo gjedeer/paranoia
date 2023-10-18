@@ -261,7 +261,7 @@ if (typeof(tbParanoia) === "undefined") {
 			};
 		},
 
-		/* Create a popup menu with all 'Received:' headers */
+		/* Create a popup menu with all 'Received:' headers. This is used by old XUL code. */
 		paranoiaCreateReceivedPopup: function(receivedHeaders) {
 			var popup = document.createElement('menupopup');
 			popup.setAttribute('id', 'paranoiaConnectionList');
@@ -275,7 +275,7 @@ if (typeof(tbParanoia) === "undefined") {
 			return popup;
 		},
 
-		/* Create an element with all 'Received:' headers */
+		/* Create an element with all 'Received:' headers. This is used by new MailExtension code. */
 		paranoiaCreateReceivedPopupAsText: function(receivedHeaders) {
 			var popup = document.createElement('div');
 			popup.setAttribute('id', 'paranoiaConnectionList');
@@ -284,6 +284,16 @@ if (typeof(tbParanoia) === "undefined") {
 				item.textContent = hdr.toString();
 				popup.appendChild(item);
 			});
+			var icons = document.createElement('div');
+			icons.setAttribute('id', 'paranoiaProviderIcons');
+			var providers = tbParanoia.paranoiaGetKnownProviders(receivedHeaders);
+			providers.forEach(function(provider) {
+				var icon = document.createElement('img');
+				icon.setAttribute('src', browser.extension.getURL('./skin/providers/' + provider + '.png'));
+				icon.setAttribute('alt', tbParanoia.paranoiaGetProviderDisplayName(provider));
+                                icons.appendChild(icon);
+			});
+			popup.appendChild(icons);
 			return popup;
 		},
 
@@ -365,7 +375,7 @@ if (typeof(tbParanoia) === "undefined") {
 
 			var elem = document.createElement('image');
 			elem.setAttribute('class', 'paranoiaProvider');
-			elem.setAttribute('src', './skin/providers/' + providerName + '.png');
+			elem.setAttribute('src', 'skin/providers/' + providerName + '.png');
 			elem.setAttribute('tooltiptext', tbParanoia.paranoiaGetProviderDisplayName(providerName));
 			parentBox.appendChild(elem);
 		},
