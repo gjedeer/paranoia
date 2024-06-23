@@ -8,7 +8,7 @@
   },
   "name": "Paranoia",
   "description": "Check if your emails arrived encrypted (and which corporations were able to read them nevertheless)",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "icons": {
     "32": "skin/good.png"
   },
