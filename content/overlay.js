@@ -120,6 +120,7 @@ if (typeof(tbParanoia) === "undefined") {
 			(matchedFromIP && tbParanoia.paranoiaIsHostLocal(matchedFromIP)) ||
 			tbParanoia.paranoiaGetDomainName(matchedFrom) == tbParanoia.paranoiaGetDomainName(matchedTo) ||
 			matchedMethod == 'local' ||
+			matchedMethod == 'sa-scanned' ||
 			matchedFrom.replace(/^\s+|\s+$/g, '') == matchedTo.replace(/^\s+|\s+$/g, ''); // trim
 
 			var isSecure = (secureMethods.indexOf(matchedMethod.toUpperCase()) != -1);
